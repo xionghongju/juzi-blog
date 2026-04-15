@@ -7,6 +7,8 @@ import { Tag as TagType } from '@/types'
 import { TableOfContents } from '@/components/blog/PostDetail/TableOfContents'
 import { ReadingProgress } from '@/components/blog/PostDetail/ReadingProgress'
 import { CommentSection } from '@/components/blog/PostDetail/CommentSection'
+import { RelatedPosts } from '@/components/blog/PostDetail/RelatedPosts'
+import { getRelatedPosts } from '@/services/post.service'
 import type { Metadata } from 'next'
 
 interface Props {
@@ -17,7 +19,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const { data: post } = await getPostBySlug(slug)
   if (!post) return { title: '文章不存在' }
-  return { title: post.title }
+
+  // 优先用 excerpt 字段，否则从正文提取前 120 字
+  const plainText = post.excerpt ||
+    (post.content
+      ? post.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
+      : '')
+
+  return {
+    title: post.title,
+    description: plainText || undefined,
+    openGraph: {
+      title: post.title,
+      description: plainText || undefined,
+      ...(post.cover_image ? { images: [{ url: post.cover_image }] } : {}),
+    },
+    twitter: {
+      card: post.cover_image ? 'summary_large_image' : 'summary',
+      title: post.title,
+      description: plainText || undefined,
+      ...(post.cover_image ? { images: [post.cover_image] } : {}),
+    },
+  }
 }
 
 export default async function PostDetailPage({ params }: Props) {
@@ -25,12 +48,19 @@ export default async function PostDetailPage({ params }: Props) {
   const { data: post } = await getPostBySlug(slug)
   if (!post) notFound()
 
-  await incrementViewCount(post.id)
+  const [, { data: relatedRaw }] = await Promise.all([
+    incrementViewCount(post.id),
+    getRelatedPosts(post.id),
+  ])
+
+  const relatedPosts = (relatedRaw ?? []).map((r: { post: unknown }) => r.post as {
+    id: number; title: string; slug: string; cover_image: string | null; published_at: string | null
+  })
 
   return (
     <>
       <ReadingProgress />
-      <div className="flex gap-10">
+      <div className="flex gap-6">
         {/* 主内容 */}
         <article className="flex-1 min-w-0">
           {/* 封面 */}
@@ -75,11 +105,13 @@ export default async function PostDetailPage({ params }: Props) {
             dangerouslySetInnerHTML={{ __html: post.content || '' }}
           />
 
+          <RelatedPosts posts={relatedPosts} />
+
           <CommentSection postId={post.id} />
         </article>
 
         {/* 目录侧边栏 */}
-        <aside className="hidden lg:block w-56 shrink-0">
+        <aside className="hidden lg:block w-36 shrink-0">
           <div className="sticky top-24">
             <TableOfContents />
           </div>

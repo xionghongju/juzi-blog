@@ -7,7 +7,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen flex flex-col">
       <BackgroundOrbs />
       <Navbar />
-      <main className="flex-1 mx-auto w-full max-w-4xl px-4 py-10">
+      <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-10">
         {children}
       </main>
       <footer className="border-t border-border/50 py-6 text-center text-sm text-muted-foreground">

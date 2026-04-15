@@ -1,17 +1,32 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export function ReadingProgress() {
   const [progress, setProgress] = useState(0)
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
     const update = () => {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement
       setProgress((scrollTop / (scrollHeight - clientHeight)) * 100)
     }
-    window.addEventListener('scroll', update)
-    return () => window.removeEventListener('scroll', update)
+    
+    // 使用 requestAnimationFrame 在浏览器绘制周期内更新，避免频繁 setState
+    const handleScroll = () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+      rafRef.current = requestAnimationFrame(update)
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
   }, [])
 
   return (

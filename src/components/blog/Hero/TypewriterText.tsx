@@ -18,16 +18,20 @@ export function TypewriterText({ texts, speed = 100, pause = 2000 }: Props) {
     const current = texts[textIndex]
 
     const timeout = setTimeout(() => {
+      setDisplayed(current.slice(0, isDeleting ? charIndex - 1 : charIndex + 1))
+      
       if (!isDeleting) {
-        setDisplayed(current.slice(0, charIndex + 1))
+        // 正在输入
         if (charIndex + 1 === current.length) {
+          // 输入完成，延迟后开始删除
           setTimeout(() => setIsDeleting(true), pause)
         } else {
           setCharIndex((c) => c + 1)
         }
       } else {
-        setDisplayed(current.slice(0, charIndex - 1))
+        // 正在删除
         if (charIndex - 1 === 0) {
+          // 删除完成，切换到下一个文本
           setIsDeleting(false)
           setTextIndex((i) => (i + 1) % texts.length)
           setCharIndex(0)

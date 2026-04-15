@@ -61,29 +61,56 @@ function LightOrbs() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden>
       {/* 左上：紫色主光晕 */}
-      <motion.div
-        className="absolute -top-[20%] -left-[10%] w-[650px] h-[650px] rounded-full bg-purple-400/20 blur-[130px]"
-        animate={{ x: [0, 60, 20, 0], y: [0, 50, 20, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+      <div
+        className="absolute -top-[20%] -left-[10%] w-[650px] h-[650px] rounded-full bg-purple-400/20 blur-[130px] opacity-60"
+        style={{
+          animation: 'slowDrift1 18s ease-in-out infinite',
+        }}
       />
       {/* 右上：粉色光晕 */}
-      <motion.div
-        className="absolute -top-[10%] -right-[15%] w-[550px] h-[550px] rounded-full bg-pink-400/15 blur-[120px]"
-        animate={{ x: [0, -70, -30, 0], y: [0, 60, 30, 0] }}
-        transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+      <div
+        className="absolute -top-[10%] -right-[15%] w-[550px] h-[550px] rounded-full bg-pink-400/15 blur-[120px] opacity-50"
+        style={{
+          animation: 'slowDrift2 22s ease-in-out infinite',
+        }}
       />
       {/* 左下：蓝色冷光 */}
-      <motion.div
-        className="absolute bottom-[15%] -left-[5%] w-[420px] h-[420px] rounded-full bg-blue-400/12 blur-[110px]"
-        animate={{ x: [0, 50, 0], y: [0, -60, 0] }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+      <div
+        className="absolute bottom-[15%] -left-[5%] w-[420px] h-[420px] rounded-full bg-blue-400/12 blur-[110px] opacity-40"
+        style={{
+          animation: 'slowDrift3 25s ease-in-out infinite',
+        }}
       />
       {/* 中右：橘色点缀 */}
-      <motion.div
-        className="absolute top-[40%] right-[5%] w-[300px] h-[300px] rounded-full bg-orange-400/12 blur-[100px]"
-        animate={{ x: [0, -40, 0], y: [0, 50, 0] }}
-        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+      <div
+        className="absolute top-[40%] right-[5%] w-[300px] h-[300px] rounded-full bg-orange-400/12 blur-[100px] opacity-40"
+        style={{
+          animation: 'slowDrift4 16s ease-in-out infinite',
+        }}
       />
+      <style>{`
+        @keyframes slowDrift1 {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(60px, 50px); }
+          75% { transform: translate(20px, 20px); }
+        }
+        @keyframes slowDrift2 {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(-70px, 60px); }
+          75% { transform: translate(-30px, 30px); }
+        }
+        @keyframes slowDrift3 {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(50px, -60px); }
+        }
+        @keyframes slowDrift4 {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-40px, 50px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          * { animation: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
