@@ -1,8 +1,10 @@
 import { Navbar } from '@/components/blog/Navbar'
+import { BackgroundOrbs } from '@/components/blog/BackgroundOrbs'
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <BackgroundOrbs />
       <Navbar />
       <main className="flex-1 mx-auto w-full max-w-4xl px-4 py-10">
         {children}
