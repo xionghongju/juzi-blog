@@ -12,6 +12,7 @@ import { Post } from '@/types'
 import { slugify } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Save, Globe } from 'lucide-react'
+import { ImageUploadInput } from '@/components/admin/shared/ImageUploadInput'
 
 interface Props {
   post?: Post
@@ -104,11 +105,12 @@ export function PostForm({ post }: Props) {
 
       {/* 封面图 */}
       <div className="space-y-1.5">
-        <Label>封面图 URL（可选）</Label>
-        <Input
+        <Label>封面图（可选）</Label>
+        <ImageUploadInput
           value={coverImage}
-          onChange={(e) => setCoverImage(e.target.value)}
-          placeholder="https://..."
+          onChange={setCoverImage}
+          placeholder="粘贴图片 URL 或点击右侧按钮上传"
+          label="封面图预览"
         />
       </div>
 

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { Save } from 'lucide-react'
+import { ImageUploadInput } from '@/components/admin/shared/ImageUploadInput'
 
 interface Settings {
   id: number
@@ -60,8 +61,13 @@ export function SettingsForm({ settings: initial }: Props) {
         <Textarea value={form.description || ''} onChange={(e) => set('description', e.target.value)} rows={3} />
       </div>
       <div className="space-y-1.5">
-        <Label>头像 URL</Label>
-        <Input value={form.avatar || ''} onChange={(e) => set('avatar', e.target.value)} placeholder="https://..." />
+        <Label>头像</Label>
+        <ImageUploadInput
+          value={form.avatar || ''}
+          onChange={(url) => set('avatar', url)}
+          placeholder="粘贴头像 URL 或点击右侧按钮上传"
+          label="头像预览"
+        />
       </div>
       <div className="space-y-1.5">
         <Label>GitHub 链接</Label>

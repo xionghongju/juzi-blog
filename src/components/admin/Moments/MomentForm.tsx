@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createMoment } from '@/services/moment.service'
 import { MOOD_OPTIONS } from '@/lib/constants'
 import { toast } from 'sonner'
-import { Send } from 'lucide-react'
+import { Send, ImagePlus, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useRef } from 'react'
 
 interface Props {
   onCreated: () => void
@@ -21,6 +23,33 @@ export function MomentForm({ onCreated }: Props) {
   const [location, setLocation] = useState('')
   const [mood, setMood] = useState('')
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const imgInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setUploading(true)
+    const urls: string[] = []
+    for (const file of files) {
+      const ext = file.name.split('.').pop()
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { data, error } = await supabase.storage
+        .from('media')
+        .upload(filename, file, { cacheControl: '3600', upsert: false })
+      if (error) { toast.error('上传失败：' + error.message); continue }
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(data.path)
+      urls.push(publicUrl)
+    }
+    setUploading(false)
+    if (imgInputRef.current) imgInputRef.current.value = ''
+    if (urls.length === 0) return
+    setImages((prev) => {
+      const existing = prev.trim()
+      return existing ? existing + '\n' + urls.join('\n') : urls.join('\n')
+    })
+    toast.success(`已上传 ${urls.length} 张图片`)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,11 +115,35 @@ export function MomentForm({ onCreated }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label>图片 URL（每行一个，可选）</Label>
+        <div className="flex items-center justify-between">
+          <Label>图片（可选）</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1.5 text-xs text-muted-foreground"
+            disabled={uploading}
+            onClick={() => imgInputRef.current?.click()}
+          >
+            {uploading
+              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              : <ImagePlus className="h-3.5 w-3.5" />
+            }
+            {uploading ? '上传中...' : '本地上传'}
+          </Button>
+          <input
+            ref={imgInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </div>
         <Textarea
           value={images}
           onChange={(e) => setImages(e.target.value)}
-          placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+          placeholder="粘贴图片 URL（每行一个），或点击右上角按钮上传本地图片"
           rows={3}
         />
       </div>
