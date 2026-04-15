@@ -57,3 +57,19 @@ export const updatePost = async (id: number, post: Partial<Post>) => {
 export const deletePost = async (id: number) => {
   return supabase.from('posts').delete().eq('id', id)
 }
+
+/** 同步文章标签：先删旧记录，再批量插入新记录 */
+export const syncPostTags = async (postId: number, tagIds: number[]) => {
+  await supabase.from('post_tags').delete().eq('post_id', postId)
+  if (tagIds.length === 0) return
+  await supabase.from('post_tags').insert(tagIds.map(tag_id => ({ post_id: postId, tag_id })))
+}
+
+export const getRelatedPosts = async (postId: number) => {
+  return supabase
+    .from('related_posts')
+    .select('score, post:related_post_id(id, title, slug, cover_image, published_at)')
+    .eq('post_id', postId)
+    .order('score', { ascending: false })
+    .limit(3)
+}

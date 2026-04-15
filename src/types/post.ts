@@ -3,6 +3,7 @@ export interface Post {
   title: string
   slug: string
   content: string
+  excerpt?: string
   cover_image?: string
   status: 'draft' | 'published'
   view_count: number
