@@ -12,9 +12,17 @@ export function Hero() {
         transition={{ duration: 0.5 }}
       >
         <motion.div
-          className="text-6xl mb-6"
-          animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
-          transition={{ duration: 2, delay: 0.5 }}
+          className="text-6xl mb-6 cursor-pointer select-none inline-block"
+          animate={{
+            y: [0, -10, 0],
+            rotate: [0, 6, -6, 6, 0],
+          }}
+          transition={{
+            y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+            rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+          }}
+          whileHover={{ scale: 1.25, rotate: 20, transition: { duration: 0.2 } }}
+          whileTap={{ scale: 0.85, rotate: -15, transition: { duration: 0.1 } }}
         >
           🍊
         </motion.div>
