@@ -7,7 +7,6 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { all, createLowlight } from 'lowlight'
-import { marked } from 'marked'
 import { Button } from '@/components/ui/button'
 import {
   Bold, Italic, Heading2, Heading3, List,
@@ -77,13 +76,21 @@ export function Editor({ content, onChange }: Props) {
     try {
       const text = await navigator.clipboard.readText()
       if (!text.trim()) return
-      const html = looksLikeMarkdown(text)
-        ? (marked.parse(text) as string)
-        : `<p>${text}</p>`
+      
+      let html: string
+      if (looksLikeMarkdown(text)) {
+        // 动态导入 marked，避免在编译时失败
+        const { marked } = await import('marked')
+        html = await marked.parse(text)
+      } else {
+        html = `<p>${text}</p>`
+      }
+      
       editor.chain().focus().insertContent(html).run()
-    } catch {
-      // 浏览器不允许读取剪贴板时降级提示
-      alert('请先复制 Markdown 内容，再点击此按钮')
+    } catch (error) {
+      // 转换失败时的降级处理
+      console.error('粘贴 Markdown 失败:', error)
+      alert('粘贴失败，请检查 Markdown 格式')
     }
   }
 
