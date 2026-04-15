@@ -1,31 +1,68 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { all, createLowlight } from 'lowlight'
+import { marked } from 'marked'
 import { Button } from '@/components/ui/button'
 import {
   Bold, Italic, Heading2, Heading3, List,
-  ListOrdered, Quote, Code, Link2, ImageIcon, Undo, Redo
+  ListOrdered, Quote, Code, Link2, ImageIcon, Undo, Redo, FileCode, ClipboardPaste
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AiWritingToolbar } from './AiWritingToolbar'
+
+const lowlight = createLowlight(all)
 
 interface Props {
   content: string
   onChange: (html: string) => void
 }
 
+function looksLikeMarkdown(text: string): boolean {
+  return /^#{1,6}\s|^```|^\*\s|^-\s|\*\*|^\d+\.\s|^>/m.test(text)
+}
+
+interface ToolbarState {
+  rect: DOMRect
+  from: number
+  to: number
+  text: string
+}
+
 export function Editor({ content, onChange }: Props) {
+  const [aiToolbar, setAiToolbar] = useState<ToolbarState | null>(null)
+
+  const handleSelectionUpdate = useCallback(({ editor }: { editor: import('@tiptap/react').Editor }) => {
+    const { from, to, empty } = editor.state.selection
+    if (empty) { setAiToolbar(null); return }
+
+    const text = editor.state.doc.textBetween(from, to, '\n')
+    if (!text.trim() || text.length < 5) { setAiToolbar(null); return }
+
+    const domSel = window.getSelection()
+    if (!domSel || !domSel.rangeCount) { setAiToolbar(null); return }
+    const rect = domSel.getRangeAt(0).getBoundingClientRect()
+    if (!rect.width) { setAiToolbar(null); return }
+
+    setAiToolbar({ rect, from, to, text })
+  }, [])
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({ codeBlock: false }),
+      CodeBlockLowlight.configure({ lowlight }),
       Image.configure({ HTMLAttributes: { class: 'rounded-xl max-w-full' } }),
       Link.configure({ openOnClick: false }),
     ],
     content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onSelectionUpdate: handleSelectionUpdate,
     editorProps: {
       attributes: {
         class: 'prose prose-neutral dark:prose-invert max-w-none min-h-[400px] focus:outline-none p-4',
@@ -34,6 +71,21 @@ export function Editor({ content, onChange }: Props) {
   })
 
   if (!editor) return null
+
+  // 从剪贴板读取 Markdown 并转为富文本插入
+  const pasteMarkdown = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (!text.trim()) return
+      const html = looksLikeMarkdown(text)
+        ? (marked.parse(text) as string)
+        : `<p>${text}</p>`
+      editor.chain().focus().insertContent(html).run()
+    } catch {
+      // 浏览器不允许读取剪贴板时降级提示
+      alert('请先复制 Markdown 内容，再点击此按钮')
+    }
+  }
 
   const ToolbarBtn = ({
     onClick, active, children, title
@@ -97,6 +149,9 @@ export function Editor({ content, onChange }: Props) {
         <ToolbarBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="引用">
           <Quote className="h-4 w-4" />
         </ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="代码块">
+          <FileCode className="h-4 w-4" />
+        </ToolbarBtn>
         <div className="w-px h-5 bg-border mx-1" />
         <ToolbarBtn onClick={setLink} active={editor.isActive('link')} title="插入链接">
           <Link2 className="h-4 w-4" />
@@ -104,9 +159,34 @@ export function Editor({ content, onChange }: Props) {
         <ToolbarBtn onClick={addImage} title="插入图片">
           <ImageIcon className="h-4 w-4" />
         </ToolbarBtn>
+        <div className="w-px h-5 bg-border mx-1" />
+        {/* Markdown 粘贴按钮 */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          title="将剪贴板中的 Markdown 内容转为富文本插入"
+          onClick={pasteMarkdown}
+          className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2"
+        >
+          <ClipboardPaste className="h-3.5 w-3.5" />
+          粘贴 MD
+        </Button>
       </div>
 
       <EditorContent editor={editor} />
+
+      {/* AI 写作工具栏：选中文字时浮现 */}
+      {aiToolbar && (
+        <AiWritingToolbar
+          editor={editor}
+          selectionRect={aiToolbar.rect}
+          from={aiToolbar.from}
+          to={aiToolbar.to}
+          selectedText={aiToolbar.text}
+          onDone={() => setAiToolbar(null)}
+        />
+      )}
     </div>
   )
 }
