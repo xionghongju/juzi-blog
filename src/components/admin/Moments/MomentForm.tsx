@@ -9,9 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createMoment } from '@/services/moment.service'
 import { MOOD_OPTIONS } from '@/lib/constants'
 import { toast } from 'sonner'
-import { Send, ImagePlus, Loader2 } from 'lucide-react'
+import { Send, ImagePlus, Loader2, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRef } from 'react'
+
+async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh`,
+    { headers: { 'User-Agent': 'juzi-blog/1.0' } }
+  )
+  if (!res.ok) throw new Error('定位服务请求失败')
+  const data = await res.json()
+  const a = data.address || {}
+  // 优先取区/县 + 市，其次省
+  const parts = [
+    a.suburb || a.town || a.county || a.district,
+    a.city || a.state,
+  ].filter(Boolean)
+  return parts.length ? parts.join(', ') : (data.display_name?.split(',')[0] ?? '')
+}
 
 interface Props {
   onCreated: () => void
@@ -24,7 +40,32 @@ export function MomentForm({ onCreated }: Props) {
   const [mood, setMood] = useState('')
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [locating, setLocating] = useState(false)
   const imgInputRef = useRef<HTMLInputElement>(null)
+
+  const handleLocate = () => {
+    if (!navigator.geolocation) return toast.error('浏览器不支持定位')
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const name = await reverseGeocode(coords.latitude, coords.longitude)
+          setLocation(name || '未知位置')
+          toast.success('定位成功')
+        } catch {
+          toast.error('地名解析失败，请手动输入')
+        } finally {
+          setLocating(false)
+        }
+      },
+      (err) => {
+        setLocating(false)
+        if (err.code === err.PERMISSION_DENIED) toast.error('已拒绝定位权限')
+        else toast.error('定位失败，请手动输入')
+      },
+      { timeout: 8000 }
+    )
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -95,7 +136,27 @@ export function MomentForm({ onCreated }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>地点（可选）</Label>
-          <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="北京" />
+          <div className="flex gap-2">
+            <Input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="北京"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={locating}
+              onClick={handleLocate}
+              title="自动定位"
+            >
+              {locating
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <MapPin className="h-4 w-4" />
+              }
+            </Button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label>心情（可选）</Label>
