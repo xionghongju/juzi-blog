@@ -1,0 +1,40 @@
+'use client'
+
+import { motion } from 'framer-motion'
+import { TypewriterText } from './TypewriterText'
+
+export function Hero() {
+  return (
+    <section className="py-16 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="text-6xl mb-6"
+          animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
+          transition={{ duration: 2, delay: 0.5 }}
+        >
+          🍊
+        </motion.div>
+
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          嗨，我是{' '}
+          <span className="text-gradient">橘子</span>
+        </h1>
+
+        <div className="text-lg text-muted-foreground mb-8 h-7">
+          <TypewriterText
+            texts={['全栈开发者', '生活记录者', '技术探索者', '终身学习者']}
+          />
+        </div>
+
+        <p className="max-w-xl mx-auto text-muted-foreground leading-relaxed">
+          这里是我的个人空间，记录技术思考、生活点滴和一切有趣的事。
+          欢迎你的到来 ✨
+        </p>
+      </motion.div>
+    </section>
+  )
+}
