@@ -23,7 +23,11 @@ export default function LoginPage() {
     try {
       const { error } = await signIn(email, password)
       if (error) {
-        toast.error('邮箱或密码错误')
+        if (error.includes('email_not_confirmed') || error.includes('Email not confirmed')) {
+          toast.error('邮箱尚未验证，请先前往邮箱点击确认链接', { duration: 6000 })
+        } else {
+          toast.error('邮箱或密码错误')
+        }
       } else {
         toast.success('登录成功')
         router.push('/dashboard')
@@ -84,6 +88,7 @@ export default function LoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? '登录中...' : '登录'}
           </Button>
+
         </form>
       </motion.div>
     </div>

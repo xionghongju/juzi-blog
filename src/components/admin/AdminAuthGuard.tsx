@@ -6,14 +6,18 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user, checkSession } = useAuthStore()
+  const user = useAuthStore((state) => state.user)
 
   useEffect(() => {
-    checkSession().then(() => {
+    // 只在组件挂载时检查一次会话
+    const checkAuth = async () => {
+      const { checkSession } = useAuthStore.getState()
+      await checkSession()
       const { user } = useAuthStore.getState()
       if (!user) router.replace('/login')
-    })
-  }, [checkSession, router])
+    }
+    checkAuth()
+  }, [router])
 
   if (!user) return null
 
