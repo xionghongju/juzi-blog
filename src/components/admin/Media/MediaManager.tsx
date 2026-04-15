@@ -22,6 +22,7 @@ export function MediaManager({ initialMedia }: Props) {
     if (!files || files.length === 0) return
     setUploading(true)
 
+    let successCount = 0
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -31,7 +32,7 @@ export function MediaManager({ initialMedia }: Props) {
 
       if (error) {
         console.error('Storage 上传失败:', error)
-        toast.error(`Storage 上传失败：${error.message}`)
+        toast.error(`上传失败：${error.message}`)
         continue
       }
 
@@ -50,11 +51,14 @@ export function MediaManager({ initialMedia }: Props) {
         continue
       }
 
-      if (record) setMedia((m) => [record, ...m])
+      if (record) {
+        setMedia((m) => [record, ...m])
+        successCount++
+      }
     }
 
     setUploading(false)
-    toast.success('上传完成')
+    if (successCount > 0) toast.success(`已上传 ${successCount} 个文件`)
     if (inputRef.current) inputRef.current.value = ''
   }
 
