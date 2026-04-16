@@ -11,9 +11,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: '未配置 UNSPLASH_ACCESS_KEY' }, { status: 500 })
   }
 
+  const page = req.nextUrl.searchParams.get('page') || '1'
+
   const url = new URL('https://api.unsplash.com/search/photos')
   url.searchParams.set('query', query)
   url.searchParams.set('per_page', '12')
+  url.searchParams.set('page', page)
   url.searchParams.set('orientation', 'landscape')
 
   const res = await fetch(url.toString(), {
