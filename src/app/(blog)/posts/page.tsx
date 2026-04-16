@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Suspense } from 'react'
 import { getPosts, searchPosts } from '@/services/post.service'
 import { supabase } from '@/lib/supabase'

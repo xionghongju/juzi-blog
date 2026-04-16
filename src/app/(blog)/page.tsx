@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Hero } from '@/components/blog/Hero'
 import { PostCard } from '@/components/blog/PostCard'
 import { getPosts } from '@/services/post.service'

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getMoments } from '@/services/moment.service'
 import { MomentCard } from '@/components/blog/MomentCard'
 import { MomentsPagination } from '@/components/blog/MomentCard/MomentsPagination'
