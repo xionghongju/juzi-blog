@@ -15,11 +15,19 @@ export function TableOfContents() {
 
   useEffect(() => {
     const els = document.querySelectorAll('.prose h2, .prose h3')
-    const items: Heading[] = Array.from(els).map((el) => ({
-      id: el.id,
-      text: el.textContent || '',
-      level: Number(el.tagName[1]),
-    }))
+    const items: Heading[] = Array.from(els).map((el, i) => {
+      // 若标题没有 id，自动生成一个并写回 DOM，使锚点跳转正常工作
+      if (!el.id) {
+        const generated = `heading-${i}-${(el.textContent || '').trim().slice(0, 20).replace(/\s+/g, '-')}`
+        el.id = generated
+      }
+      return {
+        id: el.id,
+        text: el.textContent || '',
+        level: Number(el.tagName[1]),
+      }
+    })
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHeadings(items)
 
     const observer = new IntersectionObserver(

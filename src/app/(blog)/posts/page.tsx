@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 import { Suspense } from 'react'
 import { getPosts, searchPosts } from '@/services/post.service'
@@ -10,7 +10,11 @@ import { Pagination } from '@/components/blog/PostList/Pagination'
 import { PAGE_SIZE } from '@/lib/constants'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: '文章' }
+export const metadata: Metadata = {
+  title: '文章',
+  description: '全部技术文章与生活随笔，涵盖前端开发、全栈实践、开源工具等内容。',
+  alternates: { canonical: '/posts' },
+}
 
 interface Props {
   searchParams: Promise<{ page?: string; category?: string; q?: string }>
@@ -55,7 +59,7 @@ export default async function PostsPage({ searchParams }: Props) {
       </Suspense>
 
       {posts && posts.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
             <PostCard key={post.id} post={post} index={i} />
           ))}

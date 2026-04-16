@@ -9,6 +9,7 @@ import { ReadingProgress } from '@/components/blog/PostDetail/ReadingProgress'
 import { CommentSection } from '@/components/blog/PostDetail/CommentSection'
 import { RelatedPosts } from '@/components/blog/PostDetail/RelatedPosts'
 import { getRelatedPosts } from '@/services/post.service'
+import { SITE_CONFIG } from '@/lib/constants'
 import type { Metadata } from 'next'
 
 interface Props {
@@ -26,13 +27,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? post.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
       : '')
 
+  const url = `${SITE_CONFIG.url}/posts/${slug}`
   return {
     title: post.title,
     description: plainText || undefined,
+    alternates: { canonical: `/posts/${slug}` },
     openGraph: {
       title: post.title,
       description: plainText || undefined,
-      ...(post.cover_image ? { images: [{ url: post.cover_image }] } : {}),
+      url,
+      type: 'article',
+      publishedTime: post.published_at ?? undefined,
+      modifiedTime: post.updated_at,
+      ...(post.cover_image ? { images: [{ url: post.cover_image, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       card: post.cover_image ? 'summary_large_image' : 'summary',
@@ -57,8 +64,26 @@ export default async function PostDetailPage({ params }: Props) {
     id: number; title: string; slug: string; cover_image: string | null; published_at: string | null
   })
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || undefined,
+    url: `${SITE_CONFIG.url}/posts/${slug}`,
+    datePublished: post.published_at ?? post.created_at,
+    dateModified: post.updated_at,
+    author: { '@type': 'Person', name: SITE_CONFIG.name, url: SITE_CONFIG.url },
+    publisher: { '@type': 'Person', name: SITE_CONFIG.name, url: SITE_CONFIG.url },
+    ...(post.cover_image ? { image: post.cover_image } : {}),
+    ...(post.tags?.length ? { keywords: post.tags.map((t: TagType) => t.name).join(', ') } : {}),
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ReadingProgress />
       <div className="flex gap-6">
         {/* 主内容 */}

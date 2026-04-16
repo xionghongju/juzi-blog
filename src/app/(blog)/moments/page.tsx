@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 import { getMoments } from '@/services/moment.service'
 import { MomentCard } from '@/components/blog/MomentCard'
@@ -7,7 +7,11 @@ import { PAGE_SIZE } from '@/lib/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
-export const metadata: Metadata = { title: '朋友圈' }
+export const metadata: Metadata = {
+  title: '朋友圈',
+  description: '记录生活里每一个瞬间——随拍、日常、碎碎念。',
+  alternates: { canonical: '/moments' },
+}
 
 interface Props {
   searchParams: Promise<{ page?: string }>

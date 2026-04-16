@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 60 // ISR：每 60 秒重新生成，兼顾新鲜度与性能
 
 import { Hero } from '@/components/blog/Hero'
 import { PostCard } from '@/components/blog/PostCard'
@@ -31,9 +31,10 @@ export default async function HomePage() {
         </div>
 
         {posts && posts.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {posts.slice(0, 4).map((post, i) => (
-              <PostCard key={post.id} post={post} index={i} />
+          <div className="grid gap-5 md:grid-cols-3">
+            <PostCard post={posts[0]} index={0} featured />
+            {posts.slice(1, 4).map((post, i) => (
+              <PostCard key={post.id} post={post} index={i + 1} />
             ))}
           </div>
         ) : (

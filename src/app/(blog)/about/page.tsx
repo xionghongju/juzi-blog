@@ -3,7 +3,11 @@ import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: '关于我' }
+export const metadata: Metadata = {
+  title: '关于我',
+  description: '橘子，全栈开发者，热爱技术与写作。这里有我的技术栈、项目经历和成长轨迹。',
+  alternates: { canonical: '/about' },
+}
 
 const skillGroups = [
   {
@@ -94,7 +98,7 @@ export default async function AboutPage() {
             你好！我是橘子，一名热爱技术与生活的全栈开发者。喜欢把复杂的问题拆解成简单的模块，也喜欢把生活里零碎的感悟写成文字留存下来。
           </p>
           <p>
-            工作之外，我热衷于捣鼓各种开源工具、折腾个人项目。相信"做中学"是最高效的成长方式，每一个 side project 都是一次探索。
+            工作之外，我热衷于捣鼓各种开源工具、折腾个人项目。相信「做中学」是最高效的成长方式，每一个 side project 都是一次探索。
           </p>
           <p>
             这个博客是我的数字花园，没有固定的主题，有技术笔记、读书感悟、生活记录，以及一切让我觉得值得分享的东西。如果你读到了共鸣，欢迎留言聊聊 😊

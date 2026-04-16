@@ -10,10 +10,8 @@ export function getChatModel() {
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const result = await embeddingModel.embedContent({
-    content: { parts: [{ text }], role: 'user' },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    outputDimensionality: 768,
-  } as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const request = { content: { parts: [{ text }], role: 'user' }, outputDimensionality: 768 } as any
+  const result = await embeddingModel.embedContent(request)
   return result.embedding.values
 }

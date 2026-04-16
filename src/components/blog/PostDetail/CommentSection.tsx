@@ -71,7 +71,7 @@ export function CommentSection({ postId }: Props) {
       {/* 评论表单 */}
       <form onSubmit={handleSubmit} className="space-y-4 p-6 rounded-2xl border border-border/50 bg-card">
         <h3 className="font-semibold">发表评论</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="name">昵称 *</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="你的昵称" required />

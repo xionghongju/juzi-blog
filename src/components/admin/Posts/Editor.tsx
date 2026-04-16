@@ -3,6 +3,8 @@
 import { useState, useCallback } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import Heading from '@tiptap/extension-heading'
+import { mergeAttributes } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -16,6 +18,20 @@ import { cn } from '@/lib/utils'
 import { AiWritingToolbar } from './AiWritingToolbar'
 
 const lowlight = createLowlight(all)
+
+/** 自动为 h2/h3 标题生成 id，方便目录锚点跳转 */
+const HeadingWithId = Heading.extend({
+  renderHTML({ node, HTMLAttributes }) {
+    const level = this.options.levels.includes(node.attrs.level)
+      ? node.attrs.level
+      : this.options.levels[0]
+    const text = node.textContent?.trim() ?? ''
+    const id = text
+      ? text.toLowerCase().slice(0, 40).replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, '')
+      : `heading-${level}-${Math.random().toString(36).slice(2, 6)}`
+    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { id }), 0]
+  },
+})
 
 interface Props {
   content: string
@@ -53,7 +69,8 @@ export function Editor({ content, onChange }: Props) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ codeBlock: false }),
+      StarterKit.configure({ codeBlock: false, heading: false }),
+      HeadingWithId.configure({ levels: [1, 2, 3, 4] }),
       CodeBlockLowlight.configure({ lowlight }),
       Image.configure({ HTMLAttributes: { class: 'rounded-xl max-w-full' } }),
       Link.configure({ openOnClick: false }),
