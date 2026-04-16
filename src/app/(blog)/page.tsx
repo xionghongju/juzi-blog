@@ -9,14 +9,14 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 export default async function HomePage() {
-  const [{ data: posts }, { data: moments }] = await Promise.all([
+  const [{ data: posts, count: postCount }, { data: moments, count: momentCount }] = await Promise.all([
     getPosts(1),
     getMoments(1),
   ])
 
   return (
     <div className="space-y-16">
-      <Hero />
+      <Hero postCount={postCount ?? 0} momentCount={momentCount ?? 0} />
 
       {/* 最新文章 */}
       <section>
