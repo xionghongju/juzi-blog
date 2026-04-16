@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ImagePlus, Loader2, X, Image } from 'lucide-react'
+import { ImagePlus, Loader2, X, Image, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnsplashPicker } from './UnsplashPicker'
@@ -13,12 +13,14 @@ interface Props {
   onChange: (url: string) => void
   placeholder?: string
   label?: string
+  suggestQuery?: string  // 传入时显示「推荐封面」按钮，点击自动搜索
 }
 
-export function ImageUploadInput({ value, onChange, placeholder = 'https://...', label }: Props) {
+export function ImageUploadInput({ value, onChange, placeholder = 'https://...', label, suggestQuery }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [unsplashOpen, setUnsplashOpen] = useState(false)
+  const [pickerQuery, setPickerQuery] = useState<string | undefined>(undefined)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -54,11 +56,24 @@ export function ImageUploadInput({ value, onChange, placeholder = 'https://...',
           placeholder={placeholder}
           className="flex-1"
         />
+        {suggestQuery && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => { setPickerQuery(suggestQuery); setUnsplashOpen(true) }}
+            title="根据文章标题自动推荐封面图"
+            className="gap-1.5 text-xs text-purple-400 hover:text-purple-300 px-2"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            推荐封面
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"
           size="icon"
-          onClick={() => setUnsplashOpen(true)}
+          onClick={() => { setPickerQuery(undefined); setUnsplashOpen(true) }}
           title="从 Unsplash 搜图"
         >
           <Image className="h-4 w-4" />
@@ -89,6 +104,7 @@ export function ImageUploadInput({ value, onChange, placeholder = 'https://...',
         open={unsplashOpen}
         onClose={() => setUnsplashOpen(false)}
         onSelect={onChange}
+        initialQuery={pickerQuery}
       />
 
       {value && (

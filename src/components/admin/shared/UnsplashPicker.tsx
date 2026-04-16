@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,22 +21,23 @@ interface Props {
   open: boolean
   onClose: () => void
   onSelect: (url: string) => void
+  initialQuery?: string  // 传入时自动搜索
 }
 
-export function UnsplashPicker({ open, onClose, onSelect }: Props) {
+export function UnsplashPicker({ open, onClose, onSelect, initialQuery }: Props) {
   const [query, setQuery] = useState('')
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleSearch = async () => {
-    if (!query.trim()) return
+  const search = async (q: string) => {
+    if (!q.trim()) return
     setLoading(true)
     setSearched(true)
 
     try {
-      const res = await fetch(`/api/unsplash?query=${encodeURIComponent(query)}`)
+      const res = await fetch(`/api/unsplash?query=${encodeURIComponent(q)}`)
       const data = await res.json()
       if (!res.ok) {
         toast.error(data.error || '搜索失败')
@@ -52,6 +53,20 @@ export function UnsplashPicker({ open, onClose, onSelect }: Props) {
     }
   }
 
+  // 弹窗打开时：有 initialQuery 就自动搜索，否则重置状态
+  useEffect(() => {
+    if (!open) return
+    if (initialQuery?.trim()) {
+      setQuery(initialQuery)
+      search(initialQuery)
+    } else {
+      setQuery('')
+      setPhotos([])
+      setSearched(false)
+      setTimeout(() => inputRef.current?.focus(), 100)
+    }
+  }, [open, initialQuery])
+
   const handleSelect = (photo: UnsplashPhoto) => {
     onSelect(photo.regular)
     toast.success('封面图已设置')
@@ -62,7 +77,9 @@ export function UnsplashPicker({ open, onClose, onSelect }: Props) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
-          <DialogTitle>从 Unsplash 搜图</DialogTitle>
+          <DialogTitle>
+            {initialQuery ? `推荐封面 · ${initialQuery}` : '从 Unsplash 搜图'}
+          </DialogTitle>
         </DialogHeader>
 
         {/* 搜索栏 */}
@@ -71,11 +88,10 @@ export function UnsplashPicker({ open, onClose, onSelect }: Props) {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && search(query)}
             placeholder="输入关键词，如：technology、nature、minimal..."
-            autoFocus
           />
-          <Button onClick={handleSearch} disabled={loading || !query.trim()}>
+          <Button onClick={() => search(query)} disabled={loading || !query.trim()}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             搜索
           </Button>
@@ -115,13 +131,11 @@ export function UnsplashPicker({ open, onClose, onSelect }: Props) {
                       alt={photo.alt}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    {/* hover 遮罩 */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                       <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         点击选用
                       </span>
                     </div>
-                    {/* 作者信息 */}
                     <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <a
                         href={`${photo.authorUrl}?utm_source=juzi_blog&utm_medium=referral`}
