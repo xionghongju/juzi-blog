@@ -3,9 +3,10 @@
 import { useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ImagePlus, Loader2, X } from 'lucide-react'
+import { ImagePlus, Loader2, X, Image } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { UnsplashPicker } from './UnsplashPicker'
 
 interface Props {
   value: string
@@ -17,6 +18,7 @@ interface Props {
 export function ImageUploadInput({ value, onChange, placeholder = 'https://...', label }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [unsplashOpen, setUnsplashOpen] = useState(false)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -56,6 +58,15 @@ export function ImageUploadInput({ value, onChange, placeholder = 'https://...',
           type="button"
           variant="outline"
           size="icon"
+          onClick={() => setUnsplashOpen(true)}
+          title="从 Unsplash 搜图"
+        >
+          <Image className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
           disabled={uploading}
           onClick={() => inputRef.current?.click()}
           title="从本地上传图片"
@@ -73,6 +84,12 @@ export function ImageUploadInput({ value, onChange, placeholder = 'https://...',
           onChange={handleUpload}
         />
       </div>
+
+      <UnsplashPicker
+        open={unsplashOpen}
+        onClose={() => setUnsplashOpen(false)}
+        onSelect={onChange}
+      />
 
       {value && (
         <div className="relative w-fit">
