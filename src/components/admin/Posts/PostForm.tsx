@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -19,8 +18,9 @@ import { createPost, updatePost, syncPostTags } from '@/services/post.service'
 import { Post, Category, Tag } from '@/types'
 import { slugify } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Save, Globe, X, Sparkles, Loader2, Tags } from 'lucide-react'
+import { Save, Globe, Sparkles, Loader2 } from 'lucide-react'
 import { ImageUploadInput } from '@/components/admin/shared/ImageUploadInput'
+import { TagInput } from './TagInput'
 import { computeRelatedPosts } from '@/app/actions/related-posts'
 import { embedPost } from '@/app/actions/embed-post'
 
@@ -48,12 +48,6 @@ export function PostForm({ post, categories, allTags, initialTagIds = [] }: Prop
   const handleTitleChange = (val: string) => {
     setTitle(val)
     if (!post) setSlug(slugify(val))
-  }
-
-  const toggleTag = (tagId: number) => {
-    setSelectedTagIds(prev =>
-      prev.includes(tagId) ? prev.filter(id => id !== tagId) : [...prev, tagId]
-    )
   }
 
   /** AI 生成摘要（流式） */
@@ -240,41 +234,14 @@ export function PostForm({ post, categories, allTags, initialTagIds = [] }: Prop
 
         {/* 标签 */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label>标签</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleSuggestTags}
-              disabled={suggestingTags}
-              className="h-6 gap-1 text-xs text-purple-400 hover:text-purple-300 px-2"
-            >
-              {suggestingTags
-                ? <Loader2 className="h-3 w-3 animate-spin" />
-                : <Tags className="h-3 w-3" />}
-              AI 推荐
-            </Button>
-          </div>
-          {allTags.length === 0 ? (
-            <p className="text-sm text-muted-foreground">暂无标签</p>
-          ) : (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {allTags.map((tag) => {
-                const selected = selectedTagIds.includes(tag.id)
-                return (
-                  <Badge
-                    key={tag.id}
-                    variant={selected ? 'default' : 'outline'}
-                    className="cursor-pointer select-none transition-colors"
-                    onClick={() => toggleTag(tag.id)}
-                  >
-                    {tag.name}
-                  </Badge>
-                )
-              })}
-            </div>
-          )}
+          <Label>标签</Label>
+          <TagInput
+            allTags={allTags}
+            selectedTagIds={selectedTagIds}
+            onChange={setSelectedTagIds}
+            onSuggest={handleSuggestTags}
+            suggesting={suggestingTags}
+          />
         </div>
       </div>
 

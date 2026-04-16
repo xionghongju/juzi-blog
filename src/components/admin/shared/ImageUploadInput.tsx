@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ImagePlus, Loader2, X, Image, Sparkles } from 'lucide-react'
+import { ImagePlus, Loader2, X, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnsplashPicker } from './UnsplashPicker'
@@ -69,15 +69,6 @@ export function ImageUploadInput({ value, onChange, placeholder = 'https://...',
             推荐封面
           </Button>
         )}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={() => { setPickerQuery(undefined); setUnsplashOpen(true) }}
-          title="从 Unsplash 搜图"
-        >
-          <Image className="h-4 w-4" />
-        </Button>
         <Button
           type="button"
           variant="outline"
