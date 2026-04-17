@@ -28,9 +28,28 @@ export function CommentSection({ postId }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !email || !content) return
+    if (!name.trim() || !email.trim() || !content.trim()) return
+
+    if (name.trim().length > 50) {
+      toast.error('昵称不能超过 50 个字符')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error('请输入有效的邮箱地址')
+      return
+    }
+    if (content.trim().length > 1000) {
+      toast.error('评论内容不能超过 1000 个字符')
+      return
+    }
+
     setLoading(true)
-    const { error } = await createComment({ post_id: postId, author_name: name, author_email: email, content })
+    const { error } = await createComment({
+      post_id: postId,
+      author_name: name.trim(),
+      author_email: email.trim(),
+      content: content.trim(),
+    })
     setLoading(false)
     if (error) {
       toast.error('评论提交失败，请稍后重试')

@@ -5,5 +5,5 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY!,
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   geminiApiKey: process.env.GEMINI_API_KEY!,
-  embedSecret: process.env.EMBED_SECRET || 'juzi-embed-secret',
+  embedSecret: process.env.EMBED_SECRET!,
 }

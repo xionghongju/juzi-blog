@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getChatModel } from '@/lib/gemini'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const PROMPTS: Record<string, (text: string) => string> = {
   polish: (text) =>
@@ -14,6 +15,11 @@ const PROMPTS: Record<string, (text: string) => string> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
+    if (!checkRateLimit(`ai-write:${ip}`, 100, 86_400_000)) {
+      return Response.json({ error: '请求过于频繁，请明天再试' }, { status: 429 })
+    }
+
     const { text, action } = await req.json()
     if (!text?.trim()) return Response.json({ error: '请先选中文字' }, { status: 400 })
 
