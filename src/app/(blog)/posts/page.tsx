@@ -24,23 +24,33 @@ export default async function PostsPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page || 1)
   const keyword = params.q || ''
+  const categorySlug = params.category
 
-  const { data: categories } = await supabase.from('categories').select('*').order('name')
-
+  let categories = null
   let posts = null
   let count = 0
 
   if (keyword) {
-    const { data } = await searchPosts(keyword)
-    posts = data
-    count = data?.length || 0
-  } else {
-    let categoryId: number | undefined
-    if (params.category) {
-      const cat = categories?.find((c) => c.slug === params.category)
-      categoryId = cat?.id
-    }
+    const [{ data: cats }, { data: results }] = await Promise.all([
+      supabase.from('categories').select('*').order('name'),
+      searchPosts(keyword),
+    ])
+    categories = cats
+    posts = results
+    count = results?.length || 0
+  } else if (categorySlug) {
+    const { data: cats } = await supabase.from('categories').select('*').order('name')
+    categories = cats
+    const categoryId = cats?.find((c) => c.slug === categorySlug)?.id
     const { data, count: total } = await getPosts(page, categoryId)
+    posts = data
+    count = total || 0
+  } else {
+    const [{ data: cats }, { data, count: total }] = await Promise.all([
+      supabase.from('categories').select('*').order('name'),
+      getPosts(page),
+    ])
+    categories = cats
     posts = data
     count = total || 0
   }
@@ -55,7 +65,7 @@ export default async function PostsPage({ searchParams }: Props) {
       <SearchBar />
 
       <Suspense>
-        <CategoryFilter categories={categories || []} />
+        <CategoryFilter categories={categories ?? []} />
       </Suspense>
 
       {posts && posts.length > 0 ? (

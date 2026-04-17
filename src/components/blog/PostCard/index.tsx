@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Calendar, Eye, Tag, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -28,10 +29,13 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
             {/* 封面 */}
             <div className="md:w-[52%] aspect-video md:aspect-auto shrink-0 overflow-hidden bg-muted relative">
               {post.cover_image ? (
-                <img
+                <Image
                   src={post.cover_image}
                   alt={post.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 52vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  priority
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-purple-900/40 to-pink-900/30">📝</div>
@@ -103,10 +107,12 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
           {/* 封面图 */}
           <div className="relative aspect-video shrink-0 overflow-hidden bg-muted">
             {post.cover_image ? (
-              <img
+              <Image
                 src={post.cover_image}
                 alt={post.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-purple-900/40 to-pink-900/30">
