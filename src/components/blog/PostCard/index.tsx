@@ -71,9 +71,9 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
               {post.tags && post.tags.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  {post.tags.slice(0, 4).map((t) => (
-                    <Badge key={t.id} variant="outline" className="text-xs">
-                      {t.name}
+                  {post.tags.slice(0, 4).map(({ tag }) => (
+                    <Badge key={tag.id} variant="outline" className="text-xs">
+                      {tag.name}
                     </Badge>
                   ))}
                 </div>
@@ -155,9 +155,9 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
             {post.tags && post.tags.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap mt-auto pt-1 border-t border-border/30">
                 <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
-                {post.tags.slice(0, 3).map((t) => (
-                  <Badge key={t.id} variant="outline" className="text-xs">
-                    {t.name}
+                {post.tags.slice(0, 3).map(({ tag }) => (
+                  <Badge key={tag.id} variant="outline" className="text-xs">
+                    {tag.name}
                   </Badge>
                 ))}
               </div>

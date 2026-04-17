@@ -76,7 +76,7 @@ export default async function PostDetailPage({ params }: Props) {
     author: { '@type': 'Person', name: SITE_CONFIG.name, url: SITE_CONFIG.url },
     publisher: { '@type': 'Person', name: SITE_CONFIG.name, url: SITE_CONFIG.url },
     ...(post.cover_image ? { image: post.cover_image } : {}),
-    ...(post.tags?.length ? { keywords: post.tags.map((t: TagType) => t.name).join(', ') } : {}),
+    ...(post.tags?.length ? { keywords: post.tags.map(({ tag }: { tag: TagType }) => tag.name).join(', ') } : {}),
   }
 
   return (
@@ -115,8 +115,8 @@ export default async function PostDetailPage({ params }: Props) {
           {post.tags && post.tags.length > 0 && (
             <div className="flex items-center gap-2 mb-8 flex-wrap">
               <Tag className="h-4 w-4 text-muted-foreground" />
-              {post.tags.map((t: TagType) => (
-                <Badge key={t.id} variant="outline">{t.name}</Badge>
+              {post.tags.map(({ tag }: { tag: TagType }) => (
+                <Badge key={tag.id} variant="outline">{tag.name}</Badge>
               ))}
             </div>
           )}

@@ -12,7 +12,7 @@ export interface Post {
   created_at: string
   updated_at: string
   category?: Category
-  tags?: Tag[]
+  tags?: { tag: Tag }[]
 }
 
 export interface Category {
