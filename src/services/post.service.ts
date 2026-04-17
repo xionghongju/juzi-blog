@@ -65,6 +65,31 @@ export const syncPostTags = async (postId: number, tagIds: number[]) => {
   await supabase.from('post_tags').insert(tagIds.map(tag_id => ({ post_id: postId, tag_id })))
 }
 
+export const getPostsByTag = async (tagId: number) => {
+  const { data: postTags } = await supabase
+    .from('post_tags')
+    .select('post_id')
+    .eq('tag_id', tagId)
+
+  if (!postTags?.length) return { data: [] as Post[], error: null }
+
+  return supabase
+    .from('posts')
+    .select('*, category:categories(*), tags:post_tags(tag:tags(*))')
+    .eq('status', 'published')
+    .in('id', postTags.map((pt) => pt.post_id))
+    .order('published_at', { ascending: false })
+}
+
+export const getPostsByCategory = async (categoryId: number) => {
+  return supabase
+    .from('posts')
+    .select('*, category:categories(*), tags:post_tags(tag:tags(*))')
+    .eq('status', 'published')
+    .eq('category_id', categoryId)
+    .order('published_at', { ascending: false })
+}
+
 export const getRelatedPosts = async (postId: number) => {
   return supabase
     .from('related_posts')
