@@ -8,6 +8,7 @@ import { TableOfContents } from '@/components/blog/PostDetail/TableOfContents'
 import { ReadingProgress } from '@/components/blog/PostDetail/ReadingProgress'
 import { CommentSection } from '@/components/blog/PostDetail/CommentSection'
 import { RelatedPosts } from '@/components/blog/PostDetail/RelatedPosts'
+import { CodeCopyButtons } from '@/components/blog/PostDetail/CodeCopyButtons'
 import { getRelatedPosts } from '@/services/post.service'
 import { SITE_CONFIG } from '@/lib/constants'
 import type { Metadata } from 'next'
@@ -119,6 +120,8 @@ export default async function PostDetailPage({ params }: Props) {
               ))}
             </div>
           )}
+
+          <CodeCopyButtons />
 
           {/* 正文 */}
           <div
