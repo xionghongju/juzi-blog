@@ -29,10 +29,10 @@ export default async function MomentsPage({ searchParams }: Props) {
         <p className="text-muted-foreground">记录生活里的每一个瞬间 📸</p>
       </div>
 
-      <div className="space-y-4">
+      <div>
         {moments && moments.length > 0 ? (
-          moments.map((moment, i) => (
-            <MomentCard key={moment.id} moment={moment} index={i} />
+          moments.map((moment, i, arr) => (
+            <MomentCard key={moment.id} moment={moment} index={i} isLast={i === arr.length - 1} />
           ))
         ) : (
           <p className="text-center text-muted-foreground py-20">暂无动态</p>

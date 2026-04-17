@@ -5,6 +5,8 @@ import { PostCard } from '@/components/blog/PostCard'
 import { getPosts } from '@/services/post.service'
 import { getMoments } from '@/services/moment.service'
 import { MomentCard } from '@/components/blog/MomentCard'
+import { AnimatedSection } from '@/components/blog/AnimatedSection'
+import { SectionHeading } from '@/components/blog/SectionHeading'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
@@ -19,9 +21,9 @@ export default async function HomePage() {
       <Hero postCount={postCount ?? 0} momentCount={momentCount ?? 0} />
 
       {/* 最新文章 */}
-      <section>
+      <AnimatedSection>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">最新文章</h2>
+          <SectionHeading>最新文章</SectionHeading>
           <Link
             href="/posts"
             className="flex items-center gap-1 text-sm text-primary hover:underline"
@@ -40,12 +42,12 @@ export default async function HomePage() {
         ) : (
           <p className="text-muted-foreground text-center py-10">暂无文章，快去写第一篇吧 ✍️</p>
         )}
-      </section>
+      </AnimatedSection>
 
       {/* 最新动态 */}
-      <section>
+      <AnimatedSection delay={0.1}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">最新动态</h2>
+          <SectionHeading>最新动态</SectionHeading>
           <Link
             href="/moments"
             className="flex items-center gap-1 text-sm text-primary hover:underline"
@@ -55,15 +57,15 @@ export default async function HomePage() {
         </div>
 
         {moments && moments.length > 0 ? (
-          <div className="space-y-4">
-            {moments.slice(0, 3).map((moment, i) => (
-              <MomentCard key={moment.id} moment={moment} index={i} />
+          <div>
+            {moments.slice(0, 3).map((moment, i, arr) => (
+              <MomentCard key={moment.id} moment={moment} index={i} isLast={i === arr.length - 1} />
             ))}
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-10">还没有动态，记录生活从现在开始 📸</p>
         )}
-      </section>
+      </AnimatedSection>
     </div>
   )
 }

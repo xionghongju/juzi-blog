@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createMoment } from '@/services/moment.service'
 import { MOOD_OPTIONS } from '@/lib/constants'
 import { toast } from 'sonner'
@@ -158,20 +157,26 @@ export function MomentForm({ onCreated }: Props) {
             </Button>
           </div>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 col-span-2">
           <Label>心情（可选）</Label>
-          <Select value={mood} onValueChange={(v) => setMood(v ?? '')}>
-            <SelectTrigger>
-              <SelectValue placeholder="选择心情" />
-            </SelectTrigger>
-            <SelectContent>
-              {MOOD_OPTIONS.map((m) => (
-                <SelectItem key={m.value} value={m.value}>
-                  {m.emoji} {m.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap gap-1">
+            {MOOD_OPTIONS.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                title={m.label}
+                onClick={() => setMood(mood === m.value ? '' : m.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all duration-150
+                  ${mood === m.value
+                    ? 'bg-primary/15 ring-1 ring-primary text-foreground'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+              >
+                <span className="text-base">{m.emoji}</span>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
