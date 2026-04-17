@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
+  const ip = getClientIp(req)
   if (!checkRateLimit(`unsplash:${ip}`, 30, 3_600_000)) {
     return NextResponse.json({ error: '请求过于频繁，请稍后再试' }, { status: 429 })
   }

@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server'
 import { getChatModel } from '@/lib/gemini'
 import { htmlToText } from '@/lib/html-to-text'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
+    const ip = getClientIp(req)
     if (!checkRateLimit(`ai-tags:${ip}`, 100, 86_400_000)) {
       return Response.json({ error: '请求过于频繁，请明天再试' }, { status: 429 })
     }

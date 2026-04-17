@@ -44,13 +44,17 @@ export function CommentSection({ postId }: Props) {
     }
 
     setLoading(true)
-    const { error } = await createComment({
-      post_id: postId,
-      author_name: name.trim(),
-      author_email: email.trim(),
-      content: content.trim(),
-    })
-    setLoading(false)
+    let error
+    try {
+      ;({ error } = await createComment({
+        post_id: postId,
+        author_name: name.trim(),
+        author_email: email.trim(),
+        content: content.trim(),
+      }))
+    } finally {
+      setLoading(false)
+    }
     if (error) {
       toast.error('评论提交失败，请稍后重试')
     } else {
