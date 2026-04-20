@@ -19,28 +19,25 @@ jobs:
           git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
           echo "Diff size: $(wc -c < pr_diff.txt) bytes"
 
-      - name: Run AI Review
+      - name: Run AI Review via Gemini
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           DIFF=$(cat pr_diff.txt | head -c 8000)
           PAYLOAD=$(jq -n \
             --arg diff "$DIFF" \
             '{
-              model: "claude-opus-4-5",
-              max_tokens: 1024,
-              messages: [{
-                role: "user",
-                content: ("请审查以下 PR 代码改动，指出安全问题、潜在 bug、代码质量问题，用中文简洁回复：\n\n" + $diff)
+              contents: [{
+                parts: [{
+                  text: ("请审查以下 PR 代码改动，指出安全问题、潜在 bug、代码质量问题，用中文简洁回复：\n\n" + $diff)
+                }]
               }]
             }')
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
+          RESPONSE=$(curl -s \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$GEMINI_API_KEY" \
             -H "content-type: application/json" \
             -d "$PAYLOAD")
-          echo "API Response: $RESPONSE"
-          echo "$RESPONSE" | jq -r '.content[0].text // .error.message // "审查失败，请检查 API 配置"' > review.txt
+          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // .error.message // "审查失败"' > review.txt
           cat review.txt
 
       - name: Post Review Comment
@@ -53,5 +50,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🤖 AI 代码审查\n\n${review}`
+              body: `## 🤖 AI 代码审查（Gemini）\n\n${review}`
             });
