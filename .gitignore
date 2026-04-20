@@ -43,3 +43,7 @@ next-env.d.ts
 
 # MCP 配置（含 token，不提交）
 .mcp.json
+
+# Claude dev-guard secrets
+.claude/dev-guard.env
+.claude/dev-guard.log
