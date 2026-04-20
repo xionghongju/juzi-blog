@@ -34,12 +34,13 @@ jobs:
                 content: ("请审查以下 PR 代码改动，指出安全问题、潜在 bug、代码质量问题，用中文简洁回复：\n\n" + $diff)
               }]
             }')
-          curl -s https://api.anthropic.com/v1/messages \
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
-            -d "$PAYLOAD" \
-            | jq -r '.content[0].text' > review.txt
+            -d "$PAYLOAD")
+          echo "API Response: $RESPONSE"
+          echo "$RESPONSE" | jq -r '.content[0].text // .error.message // "审查失败，请检查 API 配置"' > review.txt
           cat review.txt
 
       - name: Post Review Comment
