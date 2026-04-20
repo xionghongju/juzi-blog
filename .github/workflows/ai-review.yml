@@ -26,7 +26,8 @@ jobs:
       - name: Get PR diff
         run: |
           if ! git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt 2>&1; then
-            echo "❌ [Get PR diff] git diff 执行失败" > review.txt
+            echo "❌ [Get PR diff] git diff 执行失败，当前仓库状态如下：" > review.txt
+            git status >> review.txt 2>&1
             exit 1
           fi
 
@@ -86,11 +87,14 @@ jobs:
           echo "HTTP Status: $HTTP_STATUS"
 
           # 检查 API 返回的 HTTP 状态码
-          if [ "$HTTP_STATUS" != "200" ]; then
-            ERROR=$(jq -r '.error.message // "未知错误"' response.json 2>/dev/null || echo "响应解析失败")
-            echo "❌ [Run AI Review] API 请求失败（HTTP $HTTP_STATUS）：$ERROR" > review.txt
-            exit 1
-          fi
+          ERROR=$(jq -r '.error.message // "未知错误"' response.json 2>/dev/null || echo "响应解析失败")
+          case "$HTTP_STATUS" in
+            200) ;;
+            401) echo "❌ [Run AI Review] 认证失败（HTTP 401），请检查 GH_MODELS_TOKEN 是否有效" > review.txt; exit 1 ;;
+            429) echo "❌ [Run AI Review] 请求频率超限（HTTP 429），请稍后重试" > review.txt; exit 1 ;;
+            5*) echo "❌ [Run AI Review] API 服务器错误（HTTP $HTTP_STATUS）：$ERROR" > review.txt; exit 1 ;;
+            *) echo "❌ [Run AI Review] API 请求失败（HTTP $HTTP_STATUS）：$ERROR" > review.txt; exit 1 ;;
+          esac
 
           # 提取审查内容
           if ! REVIEW=$(jq -r '.choices[0].message.content // empty' response.json 2>&1); then
