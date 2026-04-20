@@ -9,6 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: read
+
+    env:
+      API_URL: https://models.inference.ai.azure.com/chat/completions
+      MODEL_NAME: gpt-4o-mini
+      MAX_DIFF_BYTES: 8000
+      MAX_TOKENS: 1024
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,38 +25,67 @@ jobs:
       - name: Get PR diff
         run: |
           git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
-          echo "Diff size: $(wc -c < pr_diff.txt) bytes"
+          DIFF_SIZE=$(wc -c < pr_diff.txt)
+          echo "Diff size: ${DIFF_SIZE} bytes"
+          if [ "$DIFF_SIZE" -eq 0 ]; then
+            echo "⚠️ 没有检测到代码改动" > review.txt
+            exit 0
+          fi
+          if [ "$DIFF_SIZE" -gt "$MAX_DIFF_BYTES" ]; then
+            echo "⚠️ 注意：diff 超过 ${MAX_DIFF_BYTES} 字节，已截断，部分改动未被审查。"
+          fi
 
       - name: Run AI Review via GitHub Models
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
+          GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
         run: |
-          DIFF=$(cat pr_diff.txt | head -c 8000)
+          DIFF=$(cat pr_diff.txt | head -c "$MAX_DIFF_BYTES")
           PAYLOAD=$(jq -n \
             --arg diff "$DIFF" \
+            --arg model "$MODEL_NAME" \
+            --argjson max_tokens "$MAX_TOKENS" \
             '{
-              model: "gpt-4o-mini",
+              model: $model,
               messages: [{
                 role: "user",
                 content: ("请审查以下 PR 代码改动，指出安全问题、潜在 bug、代码质量问题，用中文简洁回复：\n\n" + $diff)
               }],
-              max_tokens: 1024
+              max_tokens: $max_tokens
             }')
-          RESPONSE=$(curl -s \
-            https://models.inference.ai.azure.com/chat/completions \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+
+          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" \
+            "$API_URL" \
+            -H "Authorization: Bearer $GH_MODELS_TOKEN" \
             -H "content-type: application/json" \
             -d "$PAYLOAD")
-          echo "Response: $RESPONSE"
-          echo "$RESPONSE" | jq -r '.choices[0].message.content // .error.message // "审查失败"' > review.txt
+
+          echo "HTTP Status: $HTTP_STATUS"
+          cat response.json
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            ERROR=$(jq -r '.error.message // "未知错误"' response.json)
+            echo "❌ AI 审查失败（HTTP $HTTP_STATUS）：$ERROR" > review.txt
+            exit 1
+          fi
+
+          REVIEW=$(jq -r '.choices[0].message.content // empty' response.json)
+          if [ -z "$REVIEW" ]; then
+            echo "❌ AI 返回内容为空，请检查 API 响应" > review.txt
+            exit 1
+          fi
+
+          echo "$REVIEW" > review.txt
           cat review.txt
 
       - name: Post Review Comment
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const review = fs.readFileSync('review.txt', 'utf8');
+            if (!fs.existsSync('review.txt')) return;
+            const review = fs.readFileSync('review.txt', 'utf8').trim();
+            if (!review) return;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
