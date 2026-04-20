@@ -1,42 +1,42 @@
 name: AI Code Review
 
-  on:
-    pull_request:
-      types: [opened, synchronize]
+on:
+  pull_request:
+    types: [opened, synchronize]
 
-  jobs:
-    review:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Install Claude Code
-          run: npm install -g @anthropic-ai/claude-code
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
 
-        - name: Get PR diff
-          id: diff
-          run: |
-            git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+      - name: Get PR diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
 
-        - name: Run AI Review
-          env:
-            ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          run: |
-            claude -p --max-turns 1 \
-              "审查以下代码改动，指出安全问题、潜在 bug、代码质量问题，用中文回复：
-              $(cat pr_diff.txt)" > review.txt
+      - name: Run AI Review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p --max-turns 1 \
+            "审查以下代码改动，指出安全问题、潜在 bug、代码质量问题，用中文回复：
+            $(cat pr_diff.txt)" > review.txt
 
-        - name: Post Review Comment
-          uses: actions/github-script@v7
-          with:
-            script: |
-              const fs = require('fs');
-              const review = fs.readFileSync('review.txt', 'utf8');
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `## 🤖 AI 代码审查\n\n${review}`
-              });
+      - name: Post Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('review.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 AI 代码审查\n\n${review}`
+            });
