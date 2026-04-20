@@ -1,0 +1,133 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    env:
+      API_URL: https://models.inference.ai.azure.com/chat/completions
+      MODEL_NAME: gpt-4o-mini
+      MAX_DIFF_BYTES: 8000
+      MAX_TOKENS: 1024
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 获取本次 PR 相对于目标分支的代码差异
+      - name: Get PR diff
+        run: |
+          if ! git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt 2>&1; then
+            echo "❌ [Get PR diff] git diff 执行失败，当前仓库状态如下：" > review.txt
+            git status >> review.txt 2>&1
+            exit 1
+          fi
+
+          DIFF_SIZE=$(wc -c < pr_diff.txt)
+          DIFF_LINES=$(wc -l < pr_diff.txt)
+          echo "Diff size: ${DIFF_SIZE} bytes, ${DIFF_LINES} lines"
+
+          if [ "$DIFF_SIZE" -eq 0 ]; then
+            echo "⚠️ 没有检测到代码改动，跳过审查。" > review.txt
+            exit 0
+          fi
+
+          if [ "$DIFF_SIZE" -gt "$MAX_DIFF_BYTES" ]; then
+            TRUNCATED_LINES=$(cat pr_diff.txt | head -c "$MAX_DIFF_BYTES" | wc -l)
+            echo "⚠️ diff 共 ${DIFF_LINES} 行（${DIFF_SIZE} 字节），超出限制，仅审查前 ${TRUNCATED_LINES} 行。"
+          fi
+
+      # 调用 GitHub Models API（gpt-4o-mini）进行代码审查
+      - name: Run AI Review via GitHub Models
+        env:
+          GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
+        run: |
+          DIFF=$(cat pr_diff.txt | head -c "$MAX_DIFF_BYTES")
+
+          # 构建请求 JSON，使用 jq 确保特殊字符正确转义
+          if ! PAYLOAD=$(jq -n \
+            --arg diff "$DIFF" \
+            --arg model "$MODEL_NAME" \
+            --argjson max_tokens "$MAX_TOKENS" \
+            '{
+              model: $model,
+              messages: [{
+                role: "user",
+                content: ("请审查以下 PR 代码改动，指出安全问题、潜在 bug、代码质量问题，用中文简洁回复：\n\n" + $diff)
+              }],
+              max_tokens: $max_tokens
+            }' 2>&1); then
+            echo "❌ [Run AI Review] JSON 构建失败：$PAYLOAD" > review.txt
+            exit 1
+          fi
+
+          # 发起请求，自动重试 3 次，超时 60 秒
+          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" \
+            --retry 3 --retry-delay 5 --max-time 60 \
+            "$API_URL" \
+            -H "Authorization: Bearer $GH_MODELS_TOKEN" \
+            -H "content-type: application/json" \
+            -d "$PAYLOAD")
+          CURL_EXIT=$?
+
+          # 检查网络层错误（curl 本身失败）
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            echo "❌ [Run AI Review] 网络请求失败（curl exit $CURL_EXIT），请检查网络或 API 地址" > review.txt
+            exit 1
+          fi
+
+          echo "HTTP Status: $HTTP_STATUS"
+
+          # 检查 API 返回的 HTTP 状态码
+          ERROR=$(jq -r '.error.message // "未知错误"' response.json 2>/dev/null || echo "响应解析失败")
+          case "$HTTP_STATUS" in
+            200) ;;
+            401) echo "❌ [Run AI Review] 认证失败（HTTP 401），请检查 GH_MODELS_TOKEN 是否有效" > review.txt; exit 1 ;;
+            429) echo "❌ [Run AI Review] 请求频率超限（HTTP 429），请稍后重试" > review.txt; exit 1 ;;
+            5*) echo "❌ [Run AI Review] API 服务器错误（HTTP $HTTP_STATUS）：$ERROR" > review.txt; exit 1 ;;
+            *) echo "❌ [Run AI Review] API 请求失败（HTTP $HTTP_STATUS）：$ERROR" > review.txt; exit 1 ;;
+          esac
+
+          # 提取审查内容
+          if ! REVIEW=$(jq -r '.choices[0].message.content // empty' response.json 2>&1); then
+            echo "❌ [Run AI Review] 响应解析失败：$REVIEW" > review.txt
+            exit 1
+          fi
+
+          if [ -z "$REVIEW" ]; then
+            echo "❌ [Run AI Review] AI 返回内容为空" > review.txt
+            exit 1
+          fi
+
+          echo "$REVIEW" > review.txt
+          cat review.txt
+
+      # 将审查结果发布为 PR 评论
+      - name: Post Review Comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('review.txt')) return;
+            const review = fs.readFileSync('review.txt', 'utf8').trim();
+            if (!review) return;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 AI 代码审查\n\n${review}`
+            });
+
+      # 清理临时文件，避免敏感信息残留在 runner 上
+      - name: Cleanup
+        if: always()
+        run: rm -f pr_diff.txt response.json review.txt
