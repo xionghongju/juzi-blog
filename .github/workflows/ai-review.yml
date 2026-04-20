@@ -21,7 +21,7 @@ jobs:
 
       - name: Run AI Review via GitHub Models
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
         run: |
           DIFF=$(cat pr_diff.txt | head -c 8000)
           PAYLOAD=$(jq -n \
