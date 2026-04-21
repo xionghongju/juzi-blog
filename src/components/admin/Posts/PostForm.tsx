@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,22 @@ export function PostForm({ post, categories, allTags, initialTagIds = [] }: Prop
   const [saving, setSaving] = useState(false)
   const [generatingExcerpt, setGeneratingExcerpt] = useState(false)
   const [suggestingTags, setSuggestingTags] = useState(false)
+  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null)
+  const lastSavedContent = useRef(post?.content || '')
+
+  // 每 30 秒自动保存草稿（仅已存在的文章）
+  useEffect(() => {
+    if (!post) return
+    const timer = setInterval(async () => {
+      if (content === lastSavedContent.current || !title.trim()) return
+      const result = await updatePost(post.id, { title, slug, content, excerpt: excerpt || undefined })
+      if (!result.error) {
+        lastSavedContent.current = content
+        setAutoSavedAt(new Date())
+      }
+    }, 30_000)
+    return () => clearInterval(timer)
+  }, [post, title, slug, content, excerpt])
 
   const handleTitleChange = (val: string) => {
     setTitle(val)
@@ -164,6 +180,11 @@ export function PostForm({ post, categories, allTags, initialTagIds = [] }: Prop
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{post ? '编辑文章' : '写文章'}</h1>
         <div className="flex items-center gap-3">
+          {autoSavedAt && (
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              已自动保存 {autoSavedAt.getHours().toString().padStart(2, '0')}:{autoSavedAt.getMinutes().toString().padStart(2, '0')}
+            </span>
+          )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="h-4 w-4" />
             <span>发布</span>
