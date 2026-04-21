@@ -3,18 +3,35 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Calendar, Eye, Tag, ArrowRight } from 'lucide-react'
+import { Calendar, Clock, Eye, Tag, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Post } from '@/types'
-import { formatDate, truncate } from '@/lib/utils'
+import { formatDate, truncate, estimateReadingTime } from '@/lib/utils'
 
 interface Props {
   post: Post
   index?: number
   featured?: boolean
+  keyword?: string
 }
 
-export function PostCard({ post, index = 0, featured = false }: Props) {
+function HighlightText({ text, keyword }: { text: string; keyword: string }) {
+  if (!keyword.trim()) return <>{text}</>
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === keyword.toLowerCase()
+          ? <mark key={i} className="bg-yellow-200 dark:bg-yellow-700 text-inherit rounded-sm px-0.5 not-italic">{part}</mark>
+          : part
+      )}
+    </>
+  )
+}
+
+export function PostCard({ post, index = 0, featured = false, keyword = '' }: Props) {
+  const readingTime = estimateReadingTime(post.content || '')
   /* ── 精选横版卡（首页第一篇） ── */
   if (featured) {
     return (
@@ -63,12 +80,12 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
               </div>
 
               <h2 className="text-2xl md:text-3xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                {post.title}
+                <HighlightText text={post.title} keyword={keyword} />
               </h2>
 
               {post.content && (
                 <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                  {post.excerpt || truncate(post.content.replace(/<[^>]*>/g, ''), 160)}
+                  <HighlightText text={post.excerpt || truncate(post.content.replace(/<[^>]*>/g, ''), 160)} keyword={keyword} />
                 </p>
               )}
 
@@ -145,16 +162,20 @@ export function PostCard({ post, index = 0, featured = false }: Props) {
                 <Eye className="h-3 w-3" />
                 {post.view_count}
               </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {readingTime} 分钟
+              </span>
             </div>
 
             {/* 标题 */}
             <h2 className="text-base font-bold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-              {post.title}
+              <HighlightText text={post.title} keyword={keyword} />
             </h2>
 
             {/* 摘要 */}
             <p className="flex-1 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {post.excerpt || truncate(post.content?.replace(/<[^>]*>/g, '') || '', 90)}
+              <HighlightText text={post.excerpt || truncate(post.content?.replace(/<[^>]*>/g, '') || '', 90)} keyword={keyword} />
             </p>
 
             {/* 标签 */}

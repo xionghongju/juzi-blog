@@ -73,7 +73,7 @@ export default async function PostsPage({ searchParams }: Props) {
       {posts && posts.length > 0 ? (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
-            <PostCard key={post.id} post={post} index={i} />
+            <PostCard key={post.id} post={post} index={i} keyword={keyword} />
           ))}
         </div>
       ) : (

@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import { getPostBySlug, incrementViewCount } from '@/services/post.service'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Eye, Tag } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { Calendar, Clock, Eye, Tag } from 'lucide-react'
+import { formatDate, estimateReadingTime } from '@/lib/utils'
 import { Tag as TagType } from '@/types'
 import { TableOfContents } from '@/components/blog/PostDetail/TableOfContents'
 import { ReadingProgress } from '@/components/blog/PostDetail/ReadingProgress'
@@ -106,6 +106,10 @@ export default async function PostDetailPage({ params }: Props) {
             <span className="flex items-center gap-1">
               <Eye className="h-3.5 w-3.5" />
               {post.view_count} 次阅读
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              约 {estimateReadingTime(post.content || '')} 分钟
             </span>
           </div>
 
