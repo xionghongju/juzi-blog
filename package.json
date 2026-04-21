@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -11,6 +11,7 @@
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@google/generative-ai": "^0.24.1",
+    "@next/swc-darwin-x64": "^16.2.4",
     "@supabase/supabase-js": "^2.103.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-code-block-lowlight": "^3.22.3",
