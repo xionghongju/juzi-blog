@@ -27,10 +27,11 @@ export const getPostBySlug = async (slug: string) => {
 export const searchPosts = async (keyword: string) => {
   return supabase
     .from('posts')
-    .select('id, title, slug, created_at')
+    .select('*, category:categories(*), tags:post_tags(tag:tags(*))')
     .eq('status', 'published')
-    .textSearch('title', keyword)
-    .limit(10)
+    .or(`title.ilike.%${keyword}%,excerpt.ilike.%${keyword}%`)
+    .order('created_at', { ascending: false })
+    .limit(20)
 }
 
 export const incrementViewCount = async (id: number) => {

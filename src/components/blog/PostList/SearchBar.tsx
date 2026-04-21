@@ -1,20 +1,31 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 
 export function SearchBar() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(searchParams.get('q') ?? '')
+
+  // 当 URL q 参数变化时同步搜索框（如浏览器前进/后退）
+  useEffect(() => {
+    setValue(searchParams.get('q') ?? '')
+  }, [searchParams])
 
   const handleSearch = (keyword: string) => {
     setValue(keyword)
     startTransition(() => {
-      const params = new URLSearchParams()
-      if (keyword) params.set('q', keyword)
+      const params = new URLSearchParams(searchParams.toString())
+      if (keyword) {
+        params.set('q', keyword)
+      } else {
+        params.delete('q')
+      }
+      params.delete('page')
       router.push(`/posts?${params.toString()}`)
     })
   }

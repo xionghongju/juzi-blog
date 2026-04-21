@@ -62,7 +62,9 @@ export default async function PostsPage({ searchParams }: Props) {
         <span className="ml-3 text-lg font-normal text-muted-foreground">({count})</span>
       </h1>
 
-      <SearchBar />
+      <Suspense>
+        <SearchBar />
+      </Suspense>
 
       <Suspense>
         <CategoryFilter categories={categories ?? []} />
