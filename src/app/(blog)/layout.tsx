@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/blog/Navbar'
 import { BackgroundOrbs } from '@/components/blog/BackgroundOrbs'
 import { AiChat } from '@/components/blog/AiChat'
+import { CatMascot } from '@/components/blog/CatMascot'
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
       <footer className="border-t border-border/50 py-6 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} 橘子的博客 · 用心记录每一天</p>
       </footer>
+      <CatMascot />
       <AiChat />
     </div>
   )

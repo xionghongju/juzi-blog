@@ -31,7 +31,6 @@ export function MediaManager({ initialMedia }: Props) {
         .upload(filename, file, { cacheControl: '3600', upsert: false })
 
       if (error) {
-        console.error('Storage 上传失败:', error)
         toast.error(`上传失败：${error.message}`)
         continue
       }
@@ -46,7 +45,6 @@ export function MediaManager({ initialMedia }: Props) {
       }).select().single()
 
       if (dbError) {
-        console.error('数据库写入失败:', dbError)
         toast.error(`数据库写入失败：${dbError.message}`)
         continue
       }

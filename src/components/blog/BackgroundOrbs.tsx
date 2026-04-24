@@ -60,52 +60,50 @@ function DarkParticles() {
 function LightOrbs() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden>
+      {/* 顶部放射渐变底色，统一基调 */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(ellipse 90% 55% at 50% -5%, rgba(168,85,247,0.18) 0%, transparent 70%)',
+      }} />
+
       {/* 左上：紫色主光晕 */}
       <div
-        className="absolute -top-[20%] -left-[10%] w-[650px] h-[650px] rounded-full bg-purple-400/20 blur-[130px] opacity-60"
-        style={{
-          animation: 'slowDrift1 18s ease-in-out infinite',
-        }}
+        className="absolute -top-[15%] -left-[8%] w-[700px] h-[700px] rounded-full bg-purple-400/35 blur-[130px]"
+        style={{ animation: 'slowDrift1 18s ease-in-out infinite' }}
       />
-      {/* 右上：粉色光晕 */}
+      {/* 右上：品红光晕 */}
       <div
-        className="absolute -top-[10%] -right-[15%] w-[550px] h-[550px] rounded-full bg-pink-400/15 blur-[120px] opacity-50"
-        style={{
-          animation: 'slowDrift2 22s ease-in-out infinite',
-        }}
+        className="absolute -top-[10%] -right-[12%] w-[580px] h-[520px] rounded-full bg-fuchsia-400/22 blur-[120px]"
+        style={{ animation: 'slowDrift2 22s ease-in-out infinite' }}
       />
-      {/* 左下：蓝色冷光 */}
+      {/* 左下：蓝紫冷光 */}
       <div
-        className="absolute bottom-[15%] -left-[5%] w-[420px] h-[420px] rounded-full bg-blue-400/12 blur-[110px] opacity-40"
-        style={{
-          animation: 'slowDrift3 25s ease-in-out infinite',
-        }}
+        className="absolute bottom-[20%] -left-[5%] w-[460px] h-[460px] rounded-full bg-violet-300/20 blur-[120px]"
+        style={{ animation: 'slowDrift3 26s ease-in-out infinite' }}
       />
-      {/* 中右：橘色点缀 */}
+      {/* 右中：玫瑰暖调 */}
       <div
-        className="absolute top-[40%] right-[5%] w-[300px] h-[300px] rounded-full bg-orange-400/12 blur-[100px] opacity-40"
-        style={{
-          animation: 'slowDrift4 16s ease-in-out infinite',
-        }}
+        className="absolute top-[42%] right-[6%] w-[340px] h-[340px] rounded-full bg-rose-300/18 blur-[100px]"
+        style={{ animation: 'slowDrift4 16s ease-in-out infinite' }}
       />
+
       <style>{`
         @keyframes slowDrift1 {
           0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(60px, 50px); }
-          75% { transform: translate(20px, 20px); }
+          33% { transform: translate(65px, 55px); }
+          66% { transform: translate(25px, 20px); }
         }
         @keyframes slowDrift2 {
           0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(-70px, 60px); }
-          75% { transform: translate(-30px, 30px); }
+          33% { transform: translate(-70px, 65px); }
+          66% { transform: translate(-30px, 30px); }
         }
         @keyframes slowDrift3 {
           0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(50px, -60px); }
+          50% { transform: translate(55px, -65px); }
         }
         @keyframes slowDrift4 {
           0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(-40px, 50px); }
+          50% { transform: translate(-45px, 55px); }
         }
         @media (prefers-reduced-motion: reduce) {
           * { animation: none !important; }

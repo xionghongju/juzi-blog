@@ -63,13 +63,7 @@ export function Hero({ postCount = 0, momentCount = 0, startDate = '2024-01-01' 
   ]
 
   return (
-    <section className="pt-10 pb-6 text-center relative overflow-hidden">
-      {/* 渐变光晕背景 */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-purple-400/15 dark:bg-purple-500/10 blur-3xl" />
-        <div className="absolute top-10 -left-20 w-72 h-72 rounded-full bg-pink-400/10 dark:bg-pink-500/8 blur-3xl" />
-        <div className="absolute top-10 -right-20 w-72 h-72 rounded-full bg-blue-400/10 dark:bg-blue-500/8 blur-3xl" />
-      </div>
+    <section className="pt-10 pb-6 text-center relative">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

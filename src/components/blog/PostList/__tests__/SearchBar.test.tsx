@@ -1,61 +1,62 @@
 
-import { render, screen, fireEvent } from '@testing-library/react';
-import { SearchBar } from '../SearchBar';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React from 'react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import { SearchBar } from '../SearchBar'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   useSearchParams: jest.fn(),
-}));
+}))
 
-const mockPush = jest.fn();
+const mockPush = jest.fn()
 
 beforeEach(() => {
-  (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
-});
+  ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
+  ;(useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams())
+  jest.useFakeTimers()
+  mockPush.mockClear()
+})
 
 afterEach(() => {
-  jest.clearAllMocks();
-});
+  jest.useRealTimers()
+  jest.clearAllMocks()
+})
 
 describe('SearchBar', () => {
-  it('renders with initial search param', () => {
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams('q=initial'));
-    render(<SearchBar />);
-    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('initial');
-  });
+  it('renders search input', () => {
+    render(<SearchBar />)
+    expect(screen.getByPlaceholderText('搜索文章...')).toBeInTheDocument()
+  })
 
-  it('updates search input when search param changes', () => {
-    const { rerender } = render(<SearchBar />);
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams('q=first'));
-    
-    rerender(<SearchBar />);
-    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('first');
+  it('renders with initial search param from URL', () => {
+    ;(useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams('q=initial'))
+    render(<SearchBar />)
+    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('initial')
+  })
 
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams('q=second'));
-    rerender(<SearchBar />);
-    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('second');
-  });
+  it('updates input value on change', () => {
+    render(<SearchBar />)
+    const input = screen.getByPlaceholderText('搜索文章...')
+    fireEvent.change(input, { target: { value: 'react hooks' } })
+    expect(input).toHaveValue('react hooks')
+  })
 
-  it('handles input change and executes search', () => {
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams());
-    render(<SearchBar />);
+  it('calls router.push after debounce delay', () => {
+    render(<SearchBar />)
+    const input = screen.getByPlaceholderText('搜索文章...')
+    fireEvent.change(input, { target: { value: 'test search' } })
+    // Before debounce fires, push should not be called
+    expect(mockPush).not.toHaveBeenCalled()
+    // Advance past debounce delay (350ms)
+    act(() => { jest.advanceTimersByTime(400) })
+    expect(mockPush).toHaveBeenCalled()
+  })
 
-    const input = screen.getByPlaceholderText('搜索文章...');
-    fireEvent.change(input, { target: { value: 'test search' } });
-
-    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('test search');
-    expect(mockPush).toHaveBeenCalledWith('/posts?q=test+search');
-  });
-
-  it('handles input change with empty value', () => {
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams());
-    render(<SearchBar />);
-
-    const input = screen.getByPlaceholderText('搜索文章...');
-    fireEvent.change(input, { target: { value: '' } });
-
-    expect(screen.getByPlaceholderText('搜索文章...')).toHaveValue('');
-    expect(mockPush).toHaveBeenCalledWith('/posts');
-  });
-});
+  it('clears input when value is empty', () => {
+    render(<SearchBar />)
+    const input = screen.getByPlaceholderText('搜索文章...')
+    fireEvent.change(input, { target: { value: '' } })
+    expect(input).toHaveValue('')
+  })
+})

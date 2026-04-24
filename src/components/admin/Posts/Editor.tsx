@@ -106,7 +106,6 @@ export function Editor({ content, onChange }: Props) {
       editor.chain().focus().insertContent(html).run()
     } catch (error) {
       // 转换失败时的降级处理
-      console.error('粘贴 Markdown 失败:', error)
       alert('粘贴失败，请检查 Markdown 格式')
     }
   }

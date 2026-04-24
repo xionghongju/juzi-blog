@@ -274,7 +274,11 @@ export function PostForm({ post, categories, allTags, initialTagIds = [] }: Prop
           onChange={setCoverImage}
           placeholder="粘贴图片 URL 或点击右侧按钮上传"
           label="封面图预览"
-          suggestQuery={title.trim() || undefined}
+          suggestQuery={
+            title.trim()
+              ? title.trim().replace(/[^\w一-龥\s]/g, ' ').split(/\s+/).slice(0, 4).join(' ')
+              : undefined
+          }
         />
       </div>
 
