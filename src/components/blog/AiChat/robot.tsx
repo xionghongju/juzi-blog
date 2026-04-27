@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion'
 import { type OutfitDef } from './outfits'
 
 export interface Message {
@@ -39,7 +39,7 @@ export function pickAction(): Action {
   return 'think'
 }
 
-const BODY_ANIMS: Record<Action, object> = {
+const BODY_ANIMS: Record<Action, TargetAndTransition> = {
   idle:  { y: [0, -7, 0],           transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } },
   wave:  { y: [0, -5, 0],           transition: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } },
   dance: { rotate: [-9, 9, -9], y: [0, -5, 0], transition: { duration: 0.55, repeat: Infinity, ease: 'easeInOut' } },
@@ -47,7 +47,7 @@ const BODY_ANIMS: Record<Action, object> = {
   think: { rotate: [-3, 3, -3], y: [0, -2, 0], transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' } },
 }
 
-const RIGHT_ARM_ANIMS: Record<Action, object> = {
+const RIGHT_ARM_ANIMS: Record<Action, TargetAndTransition> = {
   idle:  { rotate: 0,               transition: { duration: 0.5 } },
   wave:  { rotate: [-45, 20, -45],  transition: { duration: 0.4, repeat: Infinity } },
   dance: { rotate: [25, -25, 25],   transition: { duration: 0.28, repeat: Infinity } },
@@ -55,7 +55,7 @@ const RIGHT_ARM_ANIMS: Record<Action, object> = {
   think: { rotate: -62,             transition: { duration: 0.6, ease: 'easeOut' } },
 }
 
-const LEFT_ARM_ANIMS: Record<Action, object> = {
+const LEFT_ARM_ANIMS: Record<Action, TargetAndTransition> = {
   idle:  { rotate: 0,               transition: { duration: 0.5 } },
   wave:  { rotate: 12,              transition: { duration: 0.5 } },
   dance: { rotate: [-25, 25, -25],  transition: { duration: 0.28, repeat: Infinity, delay: 0.14 } },
