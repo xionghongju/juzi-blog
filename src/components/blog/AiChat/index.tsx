@@ -239,6 +239,7 @@ export function AiChat() {
                 />
                 <button
                   type="submit"
+                  aria-label="发送"
                   disabled={loading || !input.trim()}
                   className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
                 >

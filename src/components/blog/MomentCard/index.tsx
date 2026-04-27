@@ -108,6 +108,7 @@ export function MomentCard({ moment, index = 0, isLast = false }: Props) {
           {/* 点赞 */}
           <motion.button
             onClick={handleLike}
+            aria-label={liked ? '取消点赞' : '点赞'}
             whileTap={{ scale: 0.8 }}
             className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
               liked

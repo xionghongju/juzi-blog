@@ -137,6 +137,7 @@ export function SearchBar() {
                   </span>
                   <button
                     onMouseDown={(e) => handleDeleteHistory(e, kw)}
+                    aria-label="删除历史记录"
                     className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity"
                   >
                     <X className="h-3.5 w-3.5" />

@@ -139,6 +139,7 @@ export function Hero({ postCount = 0, momentCount = 0, startDate = '2024-01-01' 
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="GitHub"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-border text-sm font-medium hover:bg-muted/60 transition-colors text-muted-foreground"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden>

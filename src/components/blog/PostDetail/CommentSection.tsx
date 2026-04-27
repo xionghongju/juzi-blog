@@ -175,6 +175,7 @@ export function CommentSection({ postId }: Props) {
               </span>
               <button
                 type="button"
+                aria-label="取消回复"
                 onClick={() => setReplyTo(null)}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
